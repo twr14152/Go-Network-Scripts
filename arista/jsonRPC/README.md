@@ -1,4 +1,6 @@
-So this script utilizes hostfile and host.cfg commands files. To configure and or issue exec commands on the devices. Its pretty simple the config files use the format of host.cfg.
+### Update 02/01/2026
+
+So this script utilizes a hostfile and host.cfg commands files. To configure and or issue exec commands on the devices. Its a pretty simple concept. You only call the hostfile.txt. It then uses the hosts names called to pull the .cfg files for the commands.
 
 hostfile.txt
 ```
