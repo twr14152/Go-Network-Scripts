@@ -26,11 +26,6 @@ type Request struct {
 	Id      string     `json:"id"`
 }
 
-var un string
-var pw string
-var hostfile string
-var cmdsfile string
-
 func loginHosts(hostfile string) []string {
 	var hosts []string
 	hf, err := os.Open(hostfile)
@@ -102,11 +97,11 @@ func main() {
 	fmt.Println("hosts:", hosts)
 	for _, host := range hosts {
 		url := fmt.Sprintf("https://%s/command-api/", host)
-		un = os.Args[2]
-		pw = os.Args[3]
+		un := os.Args[2]
+		pw := os.Args[3]
 		
 		//This is the name of your config file - host.cfg
-		cmdsfile = fmt.Sprintf("%s.cfg", host)
+		cmdsfile := fmt.Sprintf("%s.cfg", host)
 		fmt.Println(cmdsfile)
 
 		resp := connect(url, un, pw, cmdsfile, "json")
