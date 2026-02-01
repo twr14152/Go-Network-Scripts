@@ -67,7 +67,7 @@ leaf1a.cfg
           "mtu": 65535,
           "l3MtuConfigured": false,
           "l2Mru": 0,
-          "lastStatusChangeTimestamp": 1769908292.048976
+          "lastStatusChangeTimestamp": 1769908292.0489767
         }
       }
     }
@@ -99,7 +99,7 @@ leaf1b.cfg
           "mtu": 65535,
           "l3MtuConfigured": false,
           "l2Mru": 0,
-          "lastStatusChangeTimestamp": 1769908293.0955617
+          "lastStatusChangeTimestamp": 1769908293.0955615
         }
       }
     },
@@ -131,7 +131,7 @@ leaf2.cfg
           "mtu": 65535,
           "l3MtuConfigured": false,
           "l2Mru": 0,
-          "lastStatusChangeTimestamp": 1769908293.8168893
+          "lastStatusChangeTimestamp": 1769908293.816889
         }
       }
     },
@@ -165,7 +165,7 @@ spine1.cfg
           "mtu": 65535,
           "l3MtuConfigured": false,
           "l2Mru": 0,
-          "lastStatusChangeTimestamp": 1769908294.4603612
+          "lastStatusChangeTimestamp": 1769908294.460361
         }
       }
     }
@@ -197,7 +197,7 @@ spine2.cfg
           "mtu": 65535,
           "l3MtuConfigured": false,
           "l2Mru": 0,
-          "lastStatusChangeTimestamp": 1769908294.7915118
+          "lastStatusChangeTimestamp": 1769908294.7915115
         }
       }
     },
