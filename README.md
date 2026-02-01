@@ -1,4 +1,7 @@
 # Go-Network-Scripts
+### 01/31/2026
+- Created script that runs jsonRPC using hostfile.txt and host.cfg files to run commands as well as configs
+  - arista/jsonRPC/main.go
 ### 07/18/2025
 - 07/20/2025 Finally got ssh using hostfile working on arista devices
 - Arista uses a keyboard interactive auth which requires using a shell session with pty
