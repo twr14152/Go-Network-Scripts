@@ -1,7 +1,7 @@
 # Go-Network-Scripts
 ### 01/31/2026
 - This script uses json-rpc to connect to arista eAPI using hostfile.txt and host.cfg files to run commands on arista devices
-  - arista/jsonRPC/main.go
+  - arista/json-rpc/main.go
 ### 07/18/2025
 - 07/20/2025 Finally got ssh using hostfile working on arista devices
 - Arista uses a keyboard interactive auth which requires using a shell session with pty
