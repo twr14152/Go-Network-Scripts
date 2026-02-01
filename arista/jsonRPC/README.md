@@ -34,7 +34,7 @@ show interfaces loopback 69
 And so on and so forth.....
 
 
-To run the script simple ./run_cmds hostsfile.txt username password
+To run the script simply ***./run_cmds hostsfile.txt username password***
 
 ```
 $ ./run_cmds hostfile.txt admin admin
