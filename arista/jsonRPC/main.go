@@ -26,14 +26,13 @@ type Request struct {
 	Id      string     `json:"id"`
 }
 
-var hostList []string
 var un string
 var pw string
-var url string
 var hostfile string
 var cmdsfile string
 
 func loginHosts(hostfile string) []string {
+	var hosts []string
 	hf, err := os.Open(hostfile)
 	if err != nil {
 		log.Fatal("Failed to Open file: ", err)
@@ -41,9 +40,9 @@ func loginHosts(hostfile string) []string {
 	scanner := bufio.NewScanner(hf)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
-		hostList = append(hostList, scanner.Text())
+		hosts = append(hosts, scanner.Text())
 	}
-	return hostList
+	return hosts
 }
 
 func readCommands(cmdsfile string) []string {
@@ -60,7 +59,7 @@ func readCommands(cmdsfile string) []string {
 	return cmds
 }
 func connect(url, un, pw, cmdsfile, format string) *http.Response {
-	// Build JSON-RPC payload
+	// Build json-rpc payload
 	var cmds []string
 	cmds = readCommands(cmdsfile)
 	fmt.Println(cmds)
@@ -86,10 +85,7 @@ func connect(url, un, pw, cmdsfile, format string) *http.Response {
 		panic(err)
 	}
 
-	// Set Basic Authentication header
 	reqHTTP.SetBasicAuth(un, pw)
-
-	// Set content type
 	reqHTTP.Header.Set("Content-Type", "application/json")
 
 	// Execute the request
@@ -104,37 +100,34 @@ func connect(url, un, pw, cmdsfile, format string) *http.Response {
 func main() {
 	hosts := loginHosts(os.Args[1])
 	fmt.Println("hosts:", hosts)
-	for host := range hosts {
-		url = fmt.Sprintf("https://%s/command-api/", hosts[host])
+	for _, host := range hosts {
+		url := fmt.Sprintf("https://%s/command-api/", host)
 		un = os.Args[2]
 		pw = os.Args[3]
-		//fmt.Println(url)
-		//fmt.Println(un)
-		//fmt.Println(pw)
-		//This is the name of your config file
-		cmdsfile = fmt.Sprintf("%s.cfg", hosts[host])
+		
+		//This is the name of your config file - host.cfg
+		cmdsfile = fmt.Sprintf("%s.cfg", host)
 		fmt.Println(cmdsfile)
 
 		resp := connect(url, un, pw, cmdsfile, "json")
-		defer resp.Body.Close() // Always close the response body
+		defer resp.Body.Close()
 
-		// Check if the request was successful
 		if resp.StatusCode == http.StatusOK {
 			bodyBytes, err := io.ReadAll(resp.Body)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-			// Pretty print the JSON response
+			
+			// Pretty print json
 			var pretty bytes.Buffer
 			err = json.Indent(&pretty, bodyBytes, "", "  ")
 			if err != nil {
-				// Print the raw response
 				fmt.Println(string(bodyBytes))
 			} else {
-				// Pretty print
 				fmt.Println(pretty.String())
 			}
 		}
 	}
 }
+
