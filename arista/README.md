@@ -1,5 +1,5 @@
 ### Arista 
-- 01/31/2026 Created script that runs jsonRPC using hostfile.txt and host.cfg files to run commands
+- 01/31/2026 Created script that runs jsonRPC using hostfile.txt and host.cfg files to run commands on arista devices
   -  arista/jsonRPC/main.go
 - 07/20/2025 Finally got ssh using hostfile working
   * ssh_using_hostfile/main.go
