@@ -2,126 +2,86 @@ package main
 
 import (
 	"bufio"
-	"bytes"
-	"crypto/tls"
-	"encoding/json"
 	"fmt"
-	"io"
+	"golang.org/x/crypto/ssh"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 )
 
-type Parameters struct {
-	Version int      `json:"version"`
-	Cmds    []string `json:"cmds"`
-	Format  string   `json:"format"`
-}
-
-type Request struct {
-	Jsonrpc string     `json:"jsonrpc"`
-	Method  string     `json:"method"`
-	Params  Parameters `json:"params"`
-	Id      string     `json:"id"`
-}
-
-func loginHosts(hostfile string) []string {
-	var hosts []string
-	hf, err := os.Open(hostfile)
-	if err != nil {
-		log.Fatal("Failed to Open file: ", err)
-	}
-	scanner := bufio.NewScanner(hf)
-	scanner.Split(bufio.ScanLines)
-	for scanner.Scan() {
-		hosts = append(hosts, scanner.Text())
-	}
-	return hosts
-}
-
-func readCommands(cmdsfile string) []string {
-	var cmds []string
-	cf, err := os.Open(cmdsfile)
-	if err != nil {
-		log.Fatal("Failed to Open file: ", err)
-	}
-	scanner := bufio.NewScanner(cf)
-	scanner.Split(bufio.ScanLines)
-	for scanner.Scan() {
-		cmds = append(cmds, scanner.Text())
-	}
-	return cmds
-}
-func connect(url, un, pw, cmdsfile, format string) *http.Response {
-	// Build json-rpc payload
-	var cmds []string
-	cmds = readCommands(cmdsfile)
-	fmt.Println(cmds)
-	p := Parameters{1, cmds, format}
-	req := Request{"2.0", "runCmds", p, "1"}
-	buf, err := json.Marshal(req)
-	if err != nil {
-		panic(err)
-	}
-
-	// Create HTTP client
-	client := &http.Client{}
-	if strings.HasPrefix(url, "https") {
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // disable ssl verification
+func commands() map[string][]string {
+	var count int
+	var host string
+	fmt.Print("Number of hosts: ")
+	fmt.Scanf("%d", &count)
+	hostCmds := make(map[string][]string)
+	fmt.Printf("\nEnter host and ssh port being used. (Ex. x.x.x.x:22 or hostname:22)\n\n\n")
+	for i := 1; i <= count; i++ {
+		fmt.Print("Enter host: ")
+		fmt.Scanf("%s", &host)
+		fmt.Println()
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("cmds: ")
+		cmds, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal("You screwed something up: ", err)
 		}
-		client = &http.Client{Transport: tr}
+		s := strings.Split(cmds, ",")
+		fmt.Println()
+		hostCmds[host] = s
 	}
-
-	// Create the request with POST method and the JSON body
-	reqHTTP, err := http.NewRequest("POST", url, bytes.NewReader(buf))
-	if err != nil {
-		panic(err)
-	}
-
-	reqHTTP.SetBasicAuth(un, pw)
-	reqHTTP.Header.Set("Content-Type", "application/json")
-
-	// Execute the request
-	resp, err := client.Do(reqHTTP)
-	if err != nil {
-		panic(err)
-	}
-
-	return resp
+	return hostCmds
 }
 
 func main() {
-	hosts := loginHosts(os.Args[1])
-	fmt.Println("hosts:", hosts)
-	for _, host := range hosts {
-		url := fmt.Sprintf("https://%s/command-api/", host)
-		un := os.Args[2]
-		pw := os.Args[3]
-		
-		//This is the name of your config file - host.cfg
-		cmdsfile := fmt.Sprintf("%s.cfg", host)
-		fmt.Println(cmdsfile)
+	user := "arista"
+	pass := "arista"
+	hostData := commands()
 
-		resp := connect(url, un, pw, cmdsfile, "json")
+	interactiveAuth := ssh.KeyboardInteractive(
+		func(user, instruction string, questions []string, echos []bool) ([]string, error) {
+			answers := make([]string, len(questions))
+			for i := range answers {
+				answers[i] = pass
+			}
 
-		if resp.StatusCode == http.StatusOK {
-			bodyBytes, err := io.ReadAll(resp.Body)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			
-			// Pretty print json
-			var pretty bytes.Buffer
-			err = json.Indent(&pretty, bodyBytes, "", "  ")
-			if err != nil {
-				fmt.Println(string(bodyBytes))
-			} else {
-				fmt.Println(pretty.String())
-			}
+			return answers, nil
+		},
+	)
+
+	for host, commands := range hostData {
+		config := &ssh.ClientConfig{
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+			User:            user,
+			Auth:            []ssh.AuthMethod{interactiveAuth},
 		}
-		resp.Body.Close()
+		fmt.Println("++++++++++++++++++++++++++++++++")
+		fmt.Println("Connected to: ", host)
+		fmt.Println("++++++++++++++++++++++++++++++++")
+		conn, err := ssh.Dial("tcp", host, config)
+		if err != nil {
+			log.Fatal("Failed to dial: ", err)
+		}
+		defer conn.Close()
+		sess, err := conn.NewSession()
+		if err != nil {
+			log.Fatal("Failed to create session: ", err)
+		}
+		defer sess.Close()
+		stdin, err := sess.StdinPipe()
+		if err != nil {
+			log.Fatal("Failed to connect to remote devices stdin: ", err)
+		}
+		sess.Stdout = os.Stdout
+		sess.Stderr = os.Stderr
+		sess.Shell()
+		fmt.Fprintf(stdin, "term len 0\n")
+		for _, v := range commands {
+			fmt.Fprintf(stdin, "%s\n", v)
+		}
+		stdin.Close()
+		sess.Wait()
 	}
 }
+
+
