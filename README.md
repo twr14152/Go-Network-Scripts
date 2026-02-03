@@ -1,4 +1,6 @@
 # Go-Network-Scripts
+### 02/03/2026
+- Updated arista/ssh_client to use PTY session vs shell session for running commands. The output is now cleaner.
 ### 01/31/2026
 - This script uses json-rpc to connect to arista eAPI using hostfile.txt and host.cfg files to run commands on arista devices
   - arista/json-rpc/main.go
